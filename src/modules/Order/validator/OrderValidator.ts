@@ -15,9 +15,5 @@ export class OrderValidator {
         throw new AppError("Item inválido no pedido", 400);
       }
     });
-
-    if (!["credit_card", "debit_card"].includes(order.paymentMethod)) {
-      throw new AppError("Método de pagamento não suportado", 400);
-    }
   }
 }

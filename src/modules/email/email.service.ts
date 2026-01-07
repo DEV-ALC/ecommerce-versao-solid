@@ -17,7 +17,7 @@ export class EmailService {
 
       const info = await mailer.sendMail({
         from: '"DevStore" <noreply@devstore.com>',
-        to: data.customer, // O email do cliente vindo do body
+        to: data.customer,
         subject: `Confirmação do Pedido #${data.orderId}`,
         text: `Olá, seu pedido #${data.orderId} no valor de R$ ${data.total} foi confirmado.`,
         html: `
@@ -32,7 +32,6 @@ export class EmailService {
         `,
       });
 
-      // use este link para visualizar no Ethereal
       logger.info(`Email enviado: ${nodemailer.getTestMessageUrl(info)}`);
 
       return nodemailer.getTestMessageUrl(info);

@@ -1,6 +1,3 @@
-import { getMailClient } from "../../../shared/lib/mail";
-import nodemailer from "nodemailer";
-import logger from "../../../shared/lib/logger";
 import { AppError } from "../../../shared/Error/AppError";
 import { OrderRepository } from "../repository/OrderRepository";
 import { EmailService } from "../../email/email.service";
@@ -16,7 +13,6 @@ export class OrderService {
     this.emailService = emailService;
   }
 
-  // Método Gigante: Violação de SRP
   async processOrder(body: InputProcessOrder): Promise<OutputProcessOrder> {
     try {
       let totalAmount = 0;
@@ -48,7 +44,6 @@ export class OrderService {
       );
       strategyPagamento.process(body.paymentDetails);
 
-      // 4. PERSISTÊNCIA (Violação de SRP - Controller acessando Banco)
       const order = await this.repository.createOrder({
         customer: body.customer,
         items: JSON.stringify(productsDetails),

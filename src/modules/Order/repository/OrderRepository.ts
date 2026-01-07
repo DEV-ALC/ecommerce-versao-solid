@@ -1,6 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import logger from "../../../shared/lib/logger";
-import { AppError } from "../../../shared/Error/AppError";
 
 export class OrderRepository {
   private readonly prisma: PrismaClient;

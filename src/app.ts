@@ -13,7 +13,6 @@ const emailService = new EmailService();
 const orderService = new OrderService(orderRepository, emailService);
 const orderController = new OrderController(orderService);
 
-// Rota única que faz tudo
 app.post("/orders", orderController.processOrder.bind(orderController));
 
 export default app;
