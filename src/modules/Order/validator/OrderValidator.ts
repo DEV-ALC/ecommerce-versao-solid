@@ -1,4 +1,4 @@
-import { AppError } from "../../../shared/Error/AppError";
+import { AppError } from "../../../shared/error/appError";
 
 export class OrderValidator {
   static validate(order: InputProcessOrder) {

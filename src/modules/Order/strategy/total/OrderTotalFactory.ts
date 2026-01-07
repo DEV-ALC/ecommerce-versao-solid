@@ -1,4 +1,4 @@
-import { AppError } from "../../../../shared/Error/AppError";
+import { AppError } from "../../../../shared/error/appError";
 import { DigitalProductStrategy } from "./DigitalProductStrategy";
 import { OrderTotalStrategy } from "./OrderTotalStrategy";
 import { PhysicalProductStrategy } from "./PhysicalProductStrategy";

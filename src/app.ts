@@ -3,7 +3,7 @@ import { OrderController } from "./modules/Order/controllers/OrderController";
 import { PrismaClient } from "@prisma/client";
 import { OrderService } from "./modules/Order/service/OrderService";
 import { OrderRepository } from "./modules/Order/repository/OrderRepository";
-import { EmailService } from "./modules/email/email.service";
+import { EmailService } from "./modules/email/emailService";
 
 const app = express();
 app.use(express.json());

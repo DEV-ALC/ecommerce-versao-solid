@@ -1,7 +1,7 @@
 import { getMailClient } from "../../shared/lib/mail";
 import nodemailer from "nodemailer";
 import logger from "../../shared/lib/logger";
-import { AppError } from "../../shared/Error/AppError";
+import { AppError } from "../../shared/error/appError";
 
 interface EmailData {
   customer: string;

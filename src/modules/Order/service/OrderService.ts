@@ -1,6 +1,6 @@
-import { AppError } from "../../../shared/Error/AppError";
+import { AppError } from "../../../shared/error/appError";
 import { OrderRepository } from "../repository/OrderRepository";
-import { EmailService } from "../../email/email.service";
+import { EmailService } from "../../email/emailService";
 import { OrderTotalStrategyFactory } from "../strategy/total/OrderTotalFactory";
 import { PagamentoStrategyFactory } from "../strategy/pagamento/pagamentoFactory";
 

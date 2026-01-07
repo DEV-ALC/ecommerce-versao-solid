@@ -1,4 +1,4 @@
-import { AppError } from "../../../../shared/Error/AppError";
+import { AppError } from "../../../../shared/error/appError";
 import logger from "../../../../shared/lib/logger";
 import { PagamentoStrategy } from "./PagamentoStrategy";
 
