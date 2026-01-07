@@ -12,6 +12,14 @@ interface InputProcessOrder {
   paymentDetails: any;
 }
 
+interface ProductDetail {
+  id: number;
+  name: string;
+  type: "physical" | "digital";
+  price: number;
+  quantity: number;
+}
+
 interface Item {
   productId: number;
   quantity: number;
@@ -19,6 +27,6 @@ interface Item {
 
 interface OutputProcessOrder {
   message: string;
-  orderId: string;
+  orderId: number;
   emailPreview: string | false;
 }

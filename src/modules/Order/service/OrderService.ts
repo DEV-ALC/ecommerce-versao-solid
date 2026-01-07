@@ -3,20 +3,24 @@ import nodemailer from "nodemailer";
 import logger from "../../../shared/lib/logger";
 import { AppError } from "../../../shared/Error/AppError";
 import { OrderRepository } from "../repository/OrderRepository";
+import { EmailService } from "../../email/email.service";
+import { OrderTotalStrategyFactory } from "../strategy/total/OrderTotalFactory";
+import { PagamentoStrategyFactory } from "../strategy/pagamento/pagamentoFactory";
 
 export class OrderService {
   private readonly repository: OrderRepository;
+  private readonly emailService: EmailService;
 
-  constructor(repository: OrderRepository) {
+  constructor(repository: OrderRepository, emailService: EmailService) {
     this.repository = repository;
+    this.emailService = emailService;
   }
 
   // Método Gigante: Violação de SRP
   async processOrder(body: InputProcessOrder): Promise<OutputProcessOrder> {
     try {
-      // 2. CÁLCULO DE PREÇO E ESTOQUE (Regra de Negócio Misturada)
       let totalAmount = 0;
-      let productsDetails = [];
+      let productsDetails: ProductDetail[] = [];
 
       for (const item of body.items) {
         const product = await this.repository.findProductById(item.productId);
@@ -25,37 +29,24 @@ export class OrderService {
           throw new AppError(`Produto ${item.productId} não encontrado`, 400);
         }
 
-        // Violação de LSP e OCP:
-        // Lógica condicional baseada em "tipo" (String).
-        // Se adicionarmos "Serviço" ou "Assinatura", teremos que mexer aqui.
-        if (product.type === "physical") {
-          totalAmount += product.price * item.quantity;
-          // Frete fixo simples
-          totalAmount += 10;
-        } else if (product.type === "digital") {
-          totalAmount += product.price * item.quantity;
-          // Produtos digitais não deveriam ter frete, ok.
-          // Mas se o aluno tentar tratar 'item' genericamente depois, vai ter problemas.
-        }
-
-        productsDetails.push({ ...product, quantity: item.quantity });
-      }
-
-      // 3. PROCESSAMENTO DE PAGAMENTO (Violação de OCP)
-      // Se quisermos adicionar "Pix", temos que modificar essa classe.
-      if (body.paymentMethod === "credit_card") {
-        logger.info(
-          `Processando cartão final ${body.paymentDetails.cardNumber.slice(-4)}`
+        const strategyTotal = OrderTotalStrategyFactory.getStrategy(
+          product.type
         );
-        // Simulação de gateway
-        if (body.paymentDetails.cvv === "000")
-          throw new Error("Cartão recusado");
-      } else if (body.paymentMethod === "debit_card") {
-        logger.info("Processando débito...");
-        // Lógica de débito
-      } else {
-        throw new AppError("Método de pagamento não suportado", 400);
+        totalAmount += strategyTotal.calculateTotal(product, item.quantity);
+
+        productsDetails.push({
+          id: product.id,
+          name: product.name,
+          type: product.type,
+          price: product.price,
+          quantity: item.quantity,
+        });
       }
+
+      const strategyPagamento = PagamentoStrategyFactory.getStrategy(
+        body.paymentMethod
+      );
+      strategyPagamento.process(body.paymentDetails);
 
       // 4. PERSISTÊNCIA (Violação de SRP - Controller acessando Banco)
       const order = await this.repository.createOrder({
@@ -65,34 +56,20 @@ export class OrderService {
         status: "confirmed",
       });
 
-      // 5. NOTIFICAÇÃO (Violação de SRP - Efeitos colaterais no Controller)
-      const mailer = await getMailClient();
-
-      const info = await mailer.sendMail({
-        from: '"DevStore" <noreply@devstore.com>',
-        to: body.customer, // O email do cliente vindo do body
-        subject: `Confirmação do Pedido #${order.id}`,
-        text: `Olá, seu pedido #${order.id} no valor de R$ ${totalAmount} foi confirmado.`,
-        html: `
-          <h1>Pedido Confirmado!</h1>
-          <p>Olá, seu pedido <b>#${order.id}</b> foi processado com sucesso.</p>
-          <p>Total: <strong>R$ ${totalAmount}</strong></p>
-          <ul>
-            ${productsDetails.map((p) => `<li>${p.name}</li>`).join("")}
-          </ul>
-        `,
+      const info = await this.emailService.sendEmailOrder({
+        customer: body.customer,
+        productsDetails: productsDetails,
+        orderId: order.id,
+        total: totalAmount,
       });
-
-      // use este link para visualizar no Ethereal
-      logger.info(`Email enviado: ${nodemailer.getTestMessageUrl(info)}`);
 
       return {
         message: "Pedido processado com sucesso",
         orderId: order.id,
-        emailPreview: nodemailer.getTestMessageUrl(info),
+        emailPreview: info,
       };
     } catch (error: any) {
-      throw new AppError("Erro interno", 500);
+      throw new AppError("Erro interno ao processar", 500);
     }
   }
 }
