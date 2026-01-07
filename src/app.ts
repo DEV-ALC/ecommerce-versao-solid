@@ -1,8 +1,8 @@
 import express from "express";
-import { OrderController } from "./controllers/OrderController";
+import { OrderController } from "./modules/Order/controllers/OrderController";
 import { PrismaClient } from "@prisma/client";
-import { OrderService } from "./service/OrderService";
-import { OrderRepository } from "./repository/OrderRepository";
+import { OrderService } from "./modules/Order/service/OrderService";
+import { OrderRepository } from "./modules/Order/repository/OrderRepository";
 
 const app = express();
 app.use(express.json());

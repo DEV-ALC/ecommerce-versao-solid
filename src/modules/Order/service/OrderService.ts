@@ -1,23 +1,8 @@
-import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-import { getMailClient } from "../lib/mail";
+import { getMailClient } from "../../../shared/lib/mail";
 import nodemailer from "nodemailer";
-import logger from "../lib/logger";
-import { AppError } from "../shared/Error/AppError";
+import logger from "../../../shared/lib/logger";
+import { AppError } from "../../../shared/Error/AppError";
 import { OrderRepository } from "../repository/OrderRepository";
-
-interface IprocessOrder {
-  customer: string;
-  items: any;
-  paymentMethod: any;
-  paymentDetails: any;
-}
-
-interface OutputProcessOrder {
-  message: string;
-  orderId: string;
-  emailPreview: string | false;
-}
 
 export class OrderService {
   private readonly repository: OrderRepository;
@@ -27,14 +12,8 @@ export class OrderService {
   }
 
   // Método Gigante: Violação de SRP
-  async processOrder(body: IprocessOrder): Promise<OutputProcessOrder> {
+  async processOrder(body: InputProcessOrder): Promise<OutputProcessOrder> {
     try {
-      // 1. VALIDAÇÃO (Deveria estar em outro lugar)
-      if (!body.items || body.items.length === 0) {
-        logger.error("Tentativa de pedido sem itens");
-        throw new AppError("Carrinho vazio", 400);
-      }
-
       // 2. CÁLCULO DE PREÇO E ESTOQUE (Regra de Negócio Misturada)
       let totalAmount = 0;
       let productsDetails = [];
@@ -113,7 +92,6 @@ export class OrderService {
         emailPreview: nodemailer.getTestMessageUrl(info),
       };
     } catch (error: any) {
-      logger.error(`Erro ao processar pedido: ${error.message}`);
       throw new AppError("Erro interno", 500);
     }
   }

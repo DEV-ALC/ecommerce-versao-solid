@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { OrderService } from "../service/OrderService";
+import { OrderValidator } from "../validator/OrderValidator";
+import logger from "../../../shared/lib/logger";
 
 export class OrderController {
   private readonly service: OrderService;
@@ -10,10 +12,11 @@ export class OrderController {
 
   async processOrder(req: Request, res: Response): Promise<Response> {
     try {
+      OrderValidator.validate(req.body);
       const result = await this.service.processOrder(req.body);
       return res.json(result);
     } catch (e: any) {
-      console.log(e);
+      logger.error(`Erro ao processar pedido: ${e.message}`);
       return res
         .status(e.status || 500)
         .json({ error: e.message || "Erro interno" });
